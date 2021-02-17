@@ -1,0 +1,27 @@
+// This is a blinking LED sketch to light up a LED using the NodeMCU V3(ESP8266)
+// Code written by: Patrik Antal 
+
+// define the blinking LED
+
+int LED_pin = 4; //accoding to our pinout the GPIO4 pin corresponds to the pin marked D2
+
+void setup() {
+  //set the pin the LED is attached to as output
+  pinMode(LED_pin, OUTPUT);
+
+  //set Serial monitor setup
+  Serial.begin(115200); //as the ESP chip is way faster than Arduinos we set the bound rate higher
+  
+}
+
+void loop() {
+
+  Serial.print("Hello"); //print Hello to the serial monitor
+  digitalWrite(LED_pin, HIGH); //turn on the LED 
+  delay(1000); //wait for a second
+
+  Serial.print(" world\n"); //this will print world in the same line and starts a new line
+  digitalWrite(LED_pin, LOW); // turn off the LED 
+  delay(1000); // wait a second
+  
+}
