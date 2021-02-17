@@ -1,0 +1,121 @@
+/*
+    This sketch demonstrates how to scan WiFi networks.
+    The API is almost the same as with the WiFi Shield library,
+    the most obvious difference being the different file you need to include:
+*/
+
+#include "ESP8266WiFi.h"
+
+
+// I was missing the ability to place variables in Strings so here is a solution:
+// Note that it is an overkill now bc. we could have done it with the + sign but feel free to us it in more advanced projects 
+// The function defination:
+
+#ifndef ARDPRINTF
+#define ARDPRINTF
+#define ARDBUFFER 16
+#include <stdarg.h>
+#include <Arduino.h>
+
+int ardprintf(char *str, ...)
+{
+  int i, count=0, j=0, flag=0;
+  char temp[ARDBUFFER+1];
+  for(i=0; str[i]!='\0';i++)  if(str[i]=='%')  count++;
+
+  va_list argv;
+  va_start(argv, count);
+  for(i=0,j=0; str[i]!='\0';i++)
+  {
+    if(str[i]=='%')
+    {
+      temp[j] = '\0';
+      Serial.print(temp);
+      j=0;
+      temp[0] = '\0';
+
+      switch(str[++i])
+      {
+        case 'd': Serial.print(va_arg(argv, int));
+                  break;
+        case 'l': Serial.print(va_arg(argv, long));
+                  break;
+        case 'f': Serial.print(va_arg(argv, double));
+                  break;
+        case 'c': Serial.print((char)va_arg(argv, int));
+                  break;
+        case 's': Serial.print(va_arg(argv, char *));
+                  break;
+        default:  ;
+      };
+    }
+    else 
+    {
+      temp[j] = str[i];
+      j = (j+1)%ARDBUFFER;
+      if(j==0) 
+      {
+        temp[ARDBUFFER] = '\0';
+        Serial.print(temp);
+        temp[0]='\0';
+      }
+    }
+  };
+  Serial.println();
+  return count + 1;
+}
+#undef ARDBUFFER
+#endif
+
+
+
+void setup() {
+  Serial.begin(115200); //again set to a high bound rate as opposed to Arduino Uno
+
+  // Set WiFi to station mode and disconnect from an AP if it was previously connected
+  // In station mode the chip is the one who wants to connect to our local network as a client
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  delay(100);  //wait 100 ms 
+
+  Serial.println("Setup done");
+  Serial.println("SCANNING PROCESS");
+}
+
+void loop() {
+  Serial.println("scan start");
+
+  // WiFi.scanNetworks will return the number of networks found
+  int n = WiFi.scanNetworks();
+  Serial.println("scan done");
+  if (n == 0) {
+    Serial.println("no networks found");
+  } else {
+    char *k; 
+    if(n ==1){
+      k = "networks found.";
+    }
+    else{
+      k = "networks found.";
+    }
+    
+    
+    ardprintf("There were %d %s", n, k);
+   
+    for (int i = 0; i < n; ++i) {
+      // Print SSID and RSSI for each network found
+      Serial.print(i + 1);
+      Serial.print(": ");
+      Serial.print(WiFi.SSID(i));
+      Serial.print(" (");
+      Serial.print(WiFi.RSSI(i));
+      Serial.print(")");
+      Serial.println((WiFi.encryptionType(i) == ENC_TYPE_NONE) ? " " : "*"); // if the network is protected print a * next to its name
+      delay(10);
+    }
+  }
+  Serial.println("");
+
+  // Wait a bit before scanning again
+  delay(5000);
+}
